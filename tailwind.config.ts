@@ -57,6 +57,17 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        service: {
+          penghadapan: "hsl(var(--service-penghadapan))",
+          bimbingan: "hsl(var(--service-bimbingan))",
+          kunjungan: "hsl(var(--service-kunjungan))",
+          pengaduan: "hsl(var(--service-pengaduan))",
+        },
+        display: {
+          bg: "hsl(var(--display-bg))",
+          text: "hsl(var(--display-text))",
+          accent: "hsl(var(--display-accent))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
