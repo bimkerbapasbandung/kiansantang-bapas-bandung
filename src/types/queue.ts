@@ -12,6 +12,10 @@ export interface QueueItem {
   queueNumber: string;
   serviceType: ServiceType;
   subService: string;
+  clientName: string;
+  pkOfficerId: string;
+  pkOfficerName: string;
+  pkOfficerPosition: string;
   status: 'waiting' | 'serving' | 'completed';
   createdAt: Date;
   calledAt?: Date;

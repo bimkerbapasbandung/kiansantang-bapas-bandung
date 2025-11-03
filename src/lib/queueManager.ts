@@ -47,13 +47,24 @@ export const queueManager = {
     return `${code}-${number}`;
   },
 
-  createQueue(serviceType: ServiceType, subService: string): QueueItem {
+  createQueue(
+    serviceType: ServiceType, 
+    subService: string,
+    clientName: string,
+    pkOfficerId: string,
+    pkOfficerName: string,
+    pkOfficerPosition: string
+  ): QueueItem {
     const queues = this.getQueues();
     const newQueue: QueueItem = {
       id: `${Date.now()}-${Math.random()}`,
       queueNumber: this.generateQueueNumber(serviceType),
       serviceType,
       subService,
+      clientName,
+      pkOfficerId,
+      pkOfficerName,
+      pkOfficerPosition,
       status: 'waiting',
       createdAt: new Date(),
     };

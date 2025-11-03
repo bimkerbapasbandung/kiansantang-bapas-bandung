@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ServiceCard } from '@/components/ServiceCard';
 import { QueueTicket } from '@/components/QueueTicket';
+import { RegistrationForm } from '@/components/RegistrationForm';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ServiceType, SUB_SERVICE_NAMES, QueueItem } from '@/types/queue';
@@ -11,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 const Index = () => {
   const navigate = useNavigate();
   const [selectedService, setSelectedService] = useState<ServiceType | null>(null);
+  const [selectedSubService, setSelectedSubService] = useState<string | null>(null);
   const [generatedQueue, setGeneratedQueue] = useState<QueueItem | null>(null);
 
   const services = [
@@ -25,10 +27,22 @@ const Index = () => {
   };
 
   const handleSubServiceSelect = (subService: string) => {
-    if (selectedService) {
-      const queue = queueManager.createQueue(selectedService, subService);
+    setSelectedSubService(subService);
+  };
+
+  const handleRegistrationSubmit = (clientName: string, pkOfficer: { id: string; name: string; position: string }) => {
+    if (selectedService && selectedSubService) {
+      const queue = queueManager.createQueue(
+        selectedService, 
+        selectedSubService,
+        clientName,
+        pkOfficer.id,
+        pkOfficer.name,
+        pkOfficer.position
+      );
       setGeneratedQueue(queue);
       setSelectedService(null);
+      setSelectedSubService(null);
     }
   };
 
@@ -37,7 +51,12 @@ const Index = () => {
   };
 
   const handleBack = () => {
+    setSelectedSubService(null);
     setSelectedService(null);
+  };
+
+  const handleBackFromRegistration = () => {
+    setSelectedSubService(null);
   };
 
   return (
@@ -85,6 +104,11 @@ const Index = () => {
               ))}
             </div>
           </div>
+        ) : selectedSubService ? (
+          <RegistrationForm 
+            onSubmit={handleRegistrationSubmit}
+            onBack={handleBackFromRegistration}
+          />
         ) : (
           <div className="space-y-6">
             <div className="flex items-center gap-4">
