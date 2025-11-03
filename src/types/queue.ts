@@ -23,6 +23,13 @@ export interface QueueItem {
   counter?: number;
 }
 
+export interface PKOfficer {
+  id: string;
+  name: string;
+  position: string;
+  is_active: boolean;
+}
+
 export const SERVICE_CODES = {
   penghadapan: 'PH',
   bimbingan: 'BM',

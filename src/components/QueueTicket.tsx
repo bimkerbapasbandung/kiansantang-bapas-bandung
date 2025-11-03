@@ -23,11 +23,20 @@ export const QueueTicket = ({ queue, onClose }: QueueTicketProps) => {
             <p className="text-6xl font-bold text-primary">{queue.queueNumber}</p>
           </div>
           <div className="space-y-1">
+            <p className="text-sm text-muted-foreground">Nama Klien</p>
+            <p className="text-lg font-semibold">{queue.clientName}</p>
+          </div>
+          <div className="space-y-1">
             <p className="text-sm text-muted-foreground">Layanan</p>
             <p className="text-xl font-semibold">{SERVICE_NAMES[queue.serviceType]}</p>
             <p className="text-sm text-muted-foreground">
               {SUB_SERVICE_NAMES[queue.serviceType][queue.subService as keyof typeof SUB_SERVICE_NAMES[typeof queue.serviceType]]}
             </p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm text-muted-foreground">Pembimbing Kemasyarakatan</p>
+            <p className="text-base font-medium">{queue.pkOfficerName}</p>
+            <p className="text-xs text-muted-foreground">{queue.pkOfficerPosition}</p>
           </div>
           <div className="text-xs text-muted-foreground">
             {new Date(queue.createdAt).toLocaleString('id-ID')}
