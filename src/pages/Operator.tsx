@@ -3,9 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { queueManager } from '@/lib/queueManager';
 import { QueueItem, SERVICE_NAMES, SUB_SERVICE_NAMES } from '@/types/queue';
-import { Phone, CheckCircle, ArrowLeft, RefreshCw } from 'lucide-react';
+import { Phone, CheckCircle, ArrowLeft, RefreshCw, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const Operator = () => {
   const navigate = useNavigate();
@@ -63,6 +64,12 @@ const Operator = () => {
     }
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/auth');
+    toast.success('Logout berhasil');
+  };
+
   return (
     <div className="min-h-screen bg-secondary p-6">
       <div className="max-w-6xl mx-auto space-y-6">
@@ -74,10 +81,16 @@ const Operator = () => {
             </Button>
             <h1 className="text-3xl font-bold">Dashboard Operator - Loket {counter}</h1>
           </div>
-          <Button variant="destructive" onClick={resetAll}>
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Reset
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="destructive" onClick={resetAll}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Reset
+            </Button>
+            <Button variant="outline" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">

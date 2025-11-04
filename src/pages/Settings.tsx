@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, ArrowLeft } from 'lucide-react';
+import { Upload, ArrowLeft, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { toast as sonnerToast } from 'sonner';
 
 interface DisplaySettings {
   id: string;
@@ -30,6 +31,12 @@ const Settings = () => {
     loadSettings();
   }, []);
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/auth');
+    sonnerToast.success('Logout berhasil');
+  };
+
   const loadSettings = async () => {
     const { data, error } = await supabase
       .from('display_settings')
@@ -50,6 +57,13 @@ const Settings = () => {
   };
 
   const handleVideoUpload = async (file: File) => {
+    if (!file.type.startsWith('video/')) {
+      throw new Error('File harus berupa video');
+    }
+    if (file.size > 100 * 1024 * 1024) {
+      throw new Error('Ukuran video maksimal 100MB');
+    }
+    
     const fileExt = file.name.split('.').pop();
     const fileName = `video-${Date.now()}.${fileExt}`;
 
@@ -67,6 +81,13 @@ const Settings = () => {
   };
 
   const handleLogoUpload = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      throw new Error('File harus berupa gambar');
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      throw new Error('Ukuran logo maksimal 5MB');
+    }
+    
     const fileExt = file.name.split('.').pop();
     const fileName = `logo-${Date.now()}.${fileExt}`;
 
@@ -137,11 +158,17 @@ const Settings = () => {
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
-            <ArrowLeft className="w-5 h-5" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <h1 className="text-3xl font-bold">Pengaturan Display</h1>
+          </div>
+          <Button variant="outline" onClick={handleLogout}>
+            <LogOut className="w-4 h-4 mr-2" />
+            Logout
           </Button>
-          <h1 className="text-3xl font-bold">Pengaturan Display</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 bg-card p-6 rounded-lg">
