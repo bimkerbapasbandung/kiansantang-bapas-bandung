@@ -22,9 +22,23 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/operator" element={<ProtectedRoute><Operator /></ProtectedRoute>} />
+          <Route 
+            path="/operator" 
+            element={
+              <ProtectedRoute>
+                <Operator />
+              </ProtectedRoute>
+            } 
+          />
           <Route path="/display" element={<Display />} />
-          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          <Route 
+            path="/settings" 
+            element={
+              <ProtectedRoute requireAdmin={true}>
+                <Settings />
+              </ProtectedRoute>
+            } 
+          />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

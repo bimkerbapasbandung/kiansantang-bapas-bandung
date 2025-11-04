@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ServiceCard } from '@/components/ServiceCard';
 import { QueueTicket } from '@/components/QueueTicket';
 import { RegistrationForm } from '@/components/RegistrationForm';
@@ -6,14 +6,32 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ServiceType, SUB_SERVICE_NAMES, QueueItem } from '@/types/queue';
 import { queueManager } from '@/lib/queueManager';
-import { FileText, Users, UserCheck, MessageSquare, ArrowLeft, Monitor, Settings } from 'lucide-react';
+import { FileText, Users, UserCheck, MessageSquare, ArrowLeft, Monitor, Settings, LogOut, LogIn } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Session } from '@supabase/supabase-js';
+import { toast } from 'sonner';
 
 const Index = () => {
   const navigate = useNavigate();
+  const [session, setSession] = useState<Session | null>(null);
   const [selectedService, setSelectedService] = useState<ServiceType | null>(null);
   const [selectedSubService, setSelectedSubService] = useState<string | null>(null);
   const [generatedQueue, setGeneratedQueue] = useState<QueueItem | null>(null);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+      }
+    );
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const services = [
     { type: 'penghadapan' as ServiceType, icon: FileText },
@@ -59,6 +77,15 @@ const Index = () => {
     setSelectedSubService(null);
   };
 
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error('Gagal logout');
+    } else {
+      toast.success('Berhasil logout');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-accent/5">
       {/* Header */}
@@ -79,10 +106,23 @@ const Index = () => {
           <Monitor className="w-4 h-4 mr-2" />
           Tampilan Display
         </Button>
-        <Button variant="outline" onClick={() => navigate('/operator')}>
-          <Settings className="w-4 h-4 mr-2" />
-          Operator
-        </Button>
+        {session ? (
+          <>
+            <Button variant="outline" onClick={() => navigate('/operator')}>
+              <Settings className="w-4 h-4 mr-2" />
+              Operator
+            </Button>
+            <Button variant="outline" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </>
+        ) : (
+          <Button variant="outline" onClick={() => navigate('/auth')}>
+            <LogIn className="w-4 h-4 mr-2" />
+            Login
+          </Button>
+        )}
       </div>
 
       {/* Main Content */}

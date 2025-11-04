@@ -1,54 +1,79 @@
-import { useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { User, Session } from '@supabase/supabase-js';
+import { Session } from '@supabase/supabase-js';
 
 interface ProtectedRouteProps {
-  children: React.ReactNode;
+  children: ReactNode;
+  requireAdmin?: boolean;
 }
 
-const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const [user, setUser] = useState<User | null>(null);
+const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
+        if (!session) {
+          navigate('/auth');
+        } else if (requireAdmin) {
+          setTimeout(() => {
+            checkAdminStatus(session.user.id);
+          }, 0);
+        }
       }
     );
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      setUser(session?.user ?? null);
       setLoading(false);
+      
+      if (!session) {
+        navigate('/auth');
+      } else if (requireAdmin) {
+        checkAdminStatus(session.user.id);
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate, requireAdmin]);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate('/auth');
+  const checkAdminStatus = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .eq('role', 'admin')
+      .single();
+
+    if (error || !data) {
+      setIsAdmin(false);
+      navigate('/');
+    } else {
+      setIsAdmin(true);
+      setLoading(false);
     }
-  }, [user, loading, navigate]);
+  };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-secondary">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading...</p>
-        </div>
+      <div className="min-h-screen bg-secondary flex items-center justify-center">
+        <p className="text-lg">Loading...</p>
       </div>
     );
   }
 
-  if (!user) return null;
+  if (!session) {
+    return null;
+  }
+
+  if (requireAdmin && !isAdmin) {
+    return null;
+  }
 
   return <>{children}</>;
 };

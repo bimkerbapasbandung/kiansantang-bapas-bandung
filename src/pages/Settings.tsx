@@ -57,11 +57,14 @@ const Settings = () => {
   };
 
   const handleVideoUpload = async (file: File) => {
-    if (!file.type.startsWith('video/')) {
-      throw new Error('File harus berupa video');
+    const allowedVideoTypes = ['video/mp4', 'video/webm', 'video/ogg'];
+    if (!allowedVideoTypes.includes(file.type)) {
+      throw new Error('Format video tidak didukung. Gunakan MP4, WebM, atau OGG.');
     }
-    if (file.size > 100 * 1024 * 1024) {
-      throw new Error('Ukuran video maksimal 100MB');
+    
+    const maxSize = 100 * 1024 * 1024;
+    if (file.size > maxSize) {
+      throw new Error('Ukuran video maksimal 100MB.');
     }
     
     const fileExt = file.name.split('.').pop();
@@ -81,11 +84,14 @@ const Settings = () => {
   };
 
   const handleLogoUpload = async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      throw new Error('File harus berupa gambar');
+    const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedImageTypes.includes(file.type)) {
+      throw new Error('Format gambar tidak didukung. Gunakan JPEG, PNG, WebP, atau GIF.');
     }
-    if (file.size > 5 * 1024 * 1024) {
-      throw new Error('Ukuran logo maksimal 5MB');
+    
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      throw new Error('Ukuran logo maksimal 5MB.');
     }
     
     const fileExt = file.name.split('.').pop();
