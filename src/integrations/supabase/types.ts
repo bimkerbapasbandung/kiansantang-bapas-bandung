@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      display_settings: {
+        Row: {
+          created_at: string
+          id: string
+          institution_name: string
+          logo_url: string | null
+          queue_column_span: number
+          running_text: string
+          updated_at: string
+          video_column_span: number
+          video_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          institution_name?: string
+          logo_url?: string | null
+          queue_column_span?: number
+          running_text?: string
+          updated_at?: string
+          video_column_span?: number
+          video_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          institution_name?: string
+          logo_url?: string | null
+          queue_column_span?: number
+          running_text?: string
+          updated_at?: string
+          video_column_span?: number
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       pk_officers: {
         Row: {
           created_at: string

@@ -3,11 +3,36 @@ import { queueManager } from '@/lib/queueManager';
 import { QueueItem, SERVICE_NAMES } from '@/types/queue';
 import { RunningText } from '@/components/RunningText';
 import { Clock } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+
+interface DisplaySettings {
+  running_text: string;
+  video_url: string | null;
+  logo_url: string | null;
+  video_column_span: number;
+  queue_column_span: number;
+  institution_name: string;
+}
 
 const Display = () => {
   const [currentQueue, setCurrentQueue] = useState<QueueItem | null>(null);
   const [time, setTime] = useState(new Date());
   const [waitingCount, setWaitingCount] = useState(0);
+  const [settings, setSettings] = useState<DisplaySettings | null>(null);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      const { data } = await supabase
+        .from('display_settings')
+        .select('*')
+        .eq('id', '00000000-0000-0000-0000-000000000001')
+        .single();
+      
+      if (data) setSettings(data);
+    };
+
+    loadSettings();
+  }, []);
 
   useEffect(() => {
     const loadData = () => {
@@ -29,24 +54,34 @@ const Display = () => {
     };
   }, []);
 
+  if (!settings) return <div className="min-h-screen bg-display-bg flex items-center justify-center">Memuat...</div>;
+
   return (
     <div className="min-h-screen bg-display-bg text-display-text flex flex-col">
       {/* Header */}
-      <div className="bg-primary p-6">
-        <h1 className="text-4xl font-bold text-center text-white">
-          BALAI PEMASYARAKATAN KELAS I BANDUNG
+      <div className="bg-primary p-6 flex items-center justify-between">
+        {settings.logo_url && (
+          <img src={settings.logo_url} alt="Logo" className="h-16 object-contain" />
+        )}
+        <h1 className="text-4xl font-bold text-center text-white flex-1">
+          {settings.institution_name}
         </h1>
+        {settings.logo_url && <div className="w-16" />}
       </div>
 
       {/* Main Content */}
       <div className="flex-1 grid grid-cols-3 gap-6 p-6">
         {/* Video Area */}
-        <div className="col-span-1 space-y-4">
+        <div className={`col-span-${settings.video_column_span} space-y-4`}>
           <div className="bg-card rounded-lg overflow-hidden aspect-video flex items-center justify-center border-4 border-display-accent">
-            <div className="text-center p-6">
-              <p className="text-muted-foreground mb-2">Video Profil</p>
-              <p className="text-sm text-muted-foreground">BAPAS Bandung</p>
-            </div>
+            {settings.video_url ? (
+              <video src={settings.video_url} controls autoPlay loop muted className="w-full h-full object-cover" />
+            ) : (
+              <div className="text-center p-6">
+                <p className="text-muted-foreground mb-2">Video Profil</p>
+                <p className="text-sm text-muted-foreground">{settings.institution_name}</p>
+              </div>
+            )}
           </div>
           
           {/* Time and Waiting Info */}
@@ -81,7 +116,7 @@ const Display = () => {
         </div>
 
         {/* Queue Display */}
-        <div className="col-span-2 flex flex-col">
+        <div className={`col-span-${settings.queue_column_span} flex flex-col`}>
           <div className="flex-1 bg-card rounded-lg p-12 flex flex-col items-center justify-center">
             {currentQueue ? (
               <div className="text-center space-y-8 w-full">
@@ -121,7 +156,7 @@ const Display = () => {
       </div>
 
       {/* Running Text */}
-      <RunningText text="Selamat datang di Balai Pemasyarakatan Kelas I Bandung • Melayani dengan Profesional dan Bermartabat • Harap menunggu panggilan nomor antrian Anda" />
+      <RunningText text={settings.running_text} />
     </div>
   );
 };
