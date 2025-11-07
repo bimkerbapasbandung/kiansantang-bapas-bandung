@@ -6,9 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Plus, Edit, Trash2, Search, UserCheck, UserX } from 'lucide-react';
+import { ArrowLeft, Plus, Edit, Trash2, Search, UserCheck, UserX, FileSpreadsheet } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { PKExcelImport } from '@/components/PKExcelImport';
 
 interface PKOfficer {
   id: string;
@@ -29,6 +30,7 @@ const PKManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showActiveOnly, setShowActiveOnly] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [editingOfficer, setEditingOfficer] = useState<PKOfficer | null>(null);
   
   const [formData, setFormData] = useState({
@@ -213,13 +215,34 @@ const PKManagement = () => {
             <h1 className="text-3xl font-bold">Manajemen Pembimbing Kemasyarakatan</h1>
           </div>
           
-          <Dialog open={dialogOpen} onOpenChange={handleDialogClose}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Tambah PK
-              </Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="border-green-200 hover:bg-green-50">
+                  <FileSpreadsheet className="w-4 h-4 mr-2" />
+                  Import Excel
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Import PK Officers dari Excel</DialogTitle>
+                </DialogHeader>
+                <PKExcelImport
+                  onImportComplete={() => {
+                    setImportDialogOpen(false);
+                    loadOfficers();
+                  }}
+                />
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={dialogOpen} onOpenChange={handleDialogClose}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Tambah PK
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>
@@ -301,6 +324,7 @@ const PKManagement = () => {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
 
         {/* Statistics */}
