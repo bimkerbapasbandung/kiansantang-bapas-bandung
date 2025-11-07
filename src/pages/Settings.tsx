@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,17 +27,13 @@ const Settings = () => {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
 
-  useEffect(() => {
-    loadSettings();
-  }, []);
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/auth');
     sonnerToast.success('Logout berhasil');
   };
 
-  const loadSettings = async () => {
+  const loadSettings = useCallback(async () => {
     const { data, error } = await supabase
       .from('display_settings')
       .select('*')
@@ -54,7 +50,11 @@ const Settings = () => {
     }
 
     setSettings(data);
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
 
   const handleVideoUpload = async (file: File) => {
     const allowedVideoTypes = ['video/mp4', 'video/webm', 'video/ogg'];

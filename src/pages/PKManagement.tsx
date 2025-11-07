@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,15 +42,7 @@ const PKManagement = () => {
     is_active: true
   });
 
-  useEffect(() => {
-    loadOfficers();
-  }, []);
-
-  useEffect(() => {
-    filterOfficers();
-  }, [officers, searchTerm, showActiveOnly]);
-
-  const loadOfficers = async () => {
+  const loadOfficers = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -66,9 +58,9 @@ const PKManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const filterOfficers = () => {
+  const filterOfficers = useCallback(() => {
     let filtered = officers;
 
     if (showActiveOnly) {
@@ -84,7 +76,15 @@ const PKManagement = () => {
     }
 
     setFilteredOfficers(filtered);
-  };
+  }, [officers, searchTerm, showActiveOnly]);
+
+  useEffect(() => {
+    loadOfficers();
+  }, [loadOfficers]);
+
+  useEffect(() => {
+    filterOfficers();
+  }, [filterOfficers]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

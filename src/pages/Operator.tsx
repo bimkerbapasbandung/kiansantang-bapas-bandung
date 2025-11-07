@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -23,14 +23,7 @@ const Operator = () => {
   const [currentAnnouncement, setCurrentAnnouncement] = useState<string>('');
   const [isAnnouncing, setIsAnnouncing] = useState(false);
 
-  useEffect(() => {
-    loadQueues();
-    const handleUpdate = () => loadQueues();
-    window.addEventListener('queueUpdate', handleUpdate);
-    return () => window.removeEventListener('queueUpdate', handleUpdate);
-  }, [searchTerm, filterService]);
-
-  const loadQueues = () => {
+  const loadQueues = useCallback(() => {
     let queues = queueManager.getWaitingQueues();
     
     // Apply service filter
@@ -49,7 +42,14 @@ const Operator = () => {
     
     setWaitingQueues(queues);
     setCurrentQueue(queueManager.getCurrentlyServing());
-  };
+  }, [searchTerm, filterService]);
+
+  useEffect(() => {
+    loadQueues();
+    const handleUpdate = () => loadQueues();
+    window.addEventListener('queueUpdate', handleUpdate);
+    return () => window.removeEventListener('queueUpdate', handleUpdate);
+  }, [loadQueues]);
 
   const callNext = async () => {
     if (waitingQueues.length === 0) {

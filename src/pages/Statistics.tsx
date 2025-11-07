@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { queueManager } from '@/lib/queueManager';
@@ -11,18 +11,18 @@ const Statistics = () => {
   const [queues, setQueues] = useState<QueueItem[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
-  useEffect(() => {
-    loadQueues();
-  }, [selectedDate]);
-
-  const loadQueues = () => {
+  const loadQueues = useCallback(() => {
     const allQueues = queueManager.getQueues();
     const filtered = allQueues.filter(q => {
       const queueDate = new Date(q.createdAt).toISOString().split('T')[0];
       return queueDate === selectedDate;
     });
     setQueues(filtered);
-  };
+  }, [selectedDate]);
+
+  useEffect(() => {
+    loadQueues();
+  }, [loadQueues]);
 
   const stats = {
     total: queues.length,
