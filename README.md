@@ -1,8 +1,16 @@
-# Welcome to your Lovable project
+# 🎯 KIANSANTANG - Kios Antrian Santun dan Tanggap
 
-## Project info
+**Sistem Layanan BAPAS Bandung Berbasis Digital**
 
-**URL**: https://lovable.dev/projects/c0aecc2c-20ff-44ad-bf53-471643963f87
+Balai Pemasyarakatan Kelas I Bandung
+
+---
+
+## 📋 Project Info
+
+**URL**: https://lovable.dev/projects/c0aecc2c-20ff-44ad-bf53-471643963f87  
+**Version**: 2.0  
+**Status**: Production Ready
 
 ## How can I edit this code?
 

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug PK Data</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: monospace;
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { color: #00ff00; margin-bottom: 20px; }
+        .section {
+            background: #2d2d2d;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #00ff00;
+        }
+        .success { color: #00ff00; }
+        .error { color: #ff0000; }
+        .warning { color: #ffaa00; }
+        pre {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+        button:hover { background: #00cc00; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #00ff00;
+            padding: 8px;
+            text-align: left;
+        }
+        th { background: #2d2d2d; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 DEBUG PK DATA - SUPABASE CONNECTION</h1>
+        
+        <div class="section">
+            <h2>📋 STEP 1: Environment Variables</h2>
+            <button onclick="checkEnv()">Check Environment</button>
+            <pre id="env-output">Klik tombol untuk cek...</pre>
+        </div>
+
+        <div class="section">
+            <h2>🔌 STEP 2: Test Supabase Connection</h2>
+            <button onclick="testConnection()">Test Connection</button>
+            <pre id="connection-output">Klik tombol untuk test...</pre>
+        </div>
+
+        <div class="section">
+            <h2>📊 STEP 3: Fetch PK Officers Data</h2>
+            <button onclick="fetchPKData()">Fetch Data</button>
+            <button onclick="fetchPKDataNoRLS()">Fetch Data (Service Role)</button>
+            <pre id="data-output">Klik tombol untuk fetch...</pre>
+        </div>
+
+        <div class="section">
+            <h2>🔐 STEP 4: Check RLS Policies</h2>
+            <button onclick="checkRLS()">Check RLS</button>
+            <pre id="rls-output">Klik tombol untuk cek...</pre>
+        </div>
+
+        <div class="section">
+            <h2>📝 STEP 5: Manual Query</h2>
+            <p>Paste URL dan Key Supabase Anda:</p>
+            <input type="text" id="manual-url" placeholder="SUPABASE_URL" style="width: 100%; padding: 10px; margin: 5px 0; background: #1a1a1a; color: #00ff00; border: 1px solid #00ff00;">
+            <input type="text" id="manual-key" placeholder="SUPABASE_ANON_KEY" style="width: 100%; padding: 10px; margin: 5px 0; background: #1a1a1a; color: #00ff00; border: 1px solid #00ff00;">
+            <button onclick="manualQuery()">Query Manual</button>
+            <pre id="manual-output">Paste URL dan Key, lalu klik tombol...</pre>
+        </div>
+    </div>
+
+    <script>
+        // Check .env file
+        function checkEnv() {
+            const output = document.getElementById('env-output');
+            
+            // Try to read from meta tags or window
+            const url = import.meta?.env?.VITE_SUPABASE_URL || window.VITE_SUPABASE_URL || 'NOT FOUND';
+            const key = import.meta?.env?.VITE_SUPABASE_PUBLISHABLE_KEY || window.VITE_SUPABASE_PUBLISHABLE_KEY || 'NOT FOUND';
+            
+            output.innerHTML = `
+VITE_SUPABASE_URL: ${url === 'NOT FOUND' ? '<span class="error">❌ NOT FOUND</span>' : '<span class="success">✅ ' + url + '</span>'}
+VITE_SUPABASE_PUBLISHABLE_KEY: ${key === 'NOT FOUND' ? '<span class="error">❌ NOT FOUND</span>' : '<span class="success">✅ ' + key.substring(0, 20) + '...</span>'}
+
+${url === 'NOT FOUND' ? '<span class="error">⚠️ Environment variables tidak ditemukan!\nCek file .env di root project.</span>' : ''}
+            `;
+        }
+
+        // Test connection
+        async function testConnection() {
+            const output = document.getElementById('connection-output');
+            output.innerHTML = '⏳ Testing connection...';
+            
+            try {
+                // Read from .env.local
+                const response = await fetch('/.env.local');
+                if (response.ok) {
+                    const text = await response.text();
+                    output.innerHTML = '<span class="success">✅ .env.local found!</span>\n' + text;
+                } else {
+                    output.innerHTML = '<span class="error">❌ .env.local not accessible via HTTP</span>\n\nCoba cek manual di project folder.';
+                }
+            } catch (error) {
+                output.innerHTML = '<span class="error">❌ Error: ' + error.message + '</span>';
+            }
+        }
+
+        // Fetch PK data
+        async function fetchPKData() {
+            const output = document.getElementById('data-output');
+            output.innerHTML = '⏳ Fetching PK officers data...';
+            
+            // Prompt for Supabase credentials
+            const url = prompt('Paste SUPABASE_URL:');
+            const key = prompt('Paste SUPABASE_ANON_KEY:');
+            
+            if (!url || !key) {
+                output.innerHTML = '<span class="error">❌ Cancelled</span>';
+                return;
+            }
+            
+            try {
+                const supabase = window.supabase.createClient(url, key);
+                
+                const { data, error, count } = await supabase
+                    .from('pk_officers')
+                    .select('*', { count: 'exact' });
+                
+                if (error) {
+                    output.innerHTML = `<span class="error">❌ ERROR:\n${JSON.stringify(error, null, 2)}</span>`;
+                    return;
+                }
+                
+                output.innerHTML = `
+<span class="success">✅ SUCCESS!</span>
+Total rows: ${count}
+Data fetched: ${data.length} rows
+
+<strong>First 5 records:</strong>
+${JSON.stringify(data.slice(0, 5), null, 2)}
+
+<strong>All names:</strong>
+${data.map(d => '- ' + d.name).join('\n')}
+                `;
+            } catch (error) {
+                output.innerHTML = `<span class="error">❌ EXCEPTION:\n${error.message}\n${error.stack}</span>`;
+            }
+        }
+
+        // Check RLS
+        async function checkRLS() {
+            const output = document.getElementById('rls-output');
+            output.innerHTML = `
+<span class="warning">⚠️ RLS (Row Level Security) Check</span>
+
+Untuk cek RLS, jalankan query ini di Supabase SQL Editor:
+
+<strong>1. Cek apakah RLS enabled:</strong>
+SELECT tablename, rowsecurity 
+FROM pg_tables 
+WHERE tablename = 'pk_officers';
+
+<strong>2. Lihat semua policies:</strong>
+SELECT * FROM pg_policies 
+WHERE tablename = 'pk_officers';
+
+<strong>3. Disable RLS sementara (untuk testing):</strong>
+ALTER TABLE public.pk_officers DISABLE ROW LEVEL SECURITY;
+
+<strong>4. Test query lagi di aplikasi</strong>
+
+<strong>5. Enable RLS kembali:</strong>
+ALTER TABLE public.pk_officers ENABLE ROW LEVEL SECURITY;
+            `;
+        }
+
+        // Manual query
+        async function manualQuery() {
+            const output = document.getElementById('manual-output');
+            const url = document.getElementById('manual-url').value.trim();
+            const key = document.getElementById('manual-key').value.trim();
+            
+            if (!url || !key) {
+                output.innerHTML = '<span class="error">❌ Isi URL dan Key terlebih dahulu!</span>';
+                return;
+            }
+            
+            output.innerHTML = '⏳ Querying...';
+            
+            try {
+                const supabase = window.supabase.createClient(url, key);
+                
+                const { data, error, count } = await supabase
+                    .from('pk_officers')
+                    .select('*', { count: 'exact' })
+                    .order('name');
+                
+                if (error) {
+                    output.innerHTML = `<span class="error">❌ ERROR:\n${JSON.stringify(error, null, 2)}</span>`;
+                    return;
+                }
+                
+                output.innerHTML = `
+<span class="success">✅ SUCCESS!</span>
+Total rows in database: ${count}
+Data returned: ${data.length} rows
+
+${data.length === 0 ? '<span class="error">⚠️ No data returned! Check RLS policies.</span>' : ''}
+
+<strong>Data:</strong>
+${data.map((d, i) => `${i + 1}. ${d.name} - ${d.position}`).join('\n')}
+                `;
+            } catch (error) {
+                output.innerHTML = `<span class="error">❌ EXCEPTION:\n${error.message}</span>`;
+            }
+        }
+
+        // Auto check on load
+        window.onload = () => {
+            checkEnv();
+        };
+    </script>
+</body>
+</html>

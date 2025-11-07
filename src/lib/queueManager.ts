@@ -2,6 +2,7 @@ import { QueueItem, ServiceType, SERVICE_CODES } from '@/types/queue';
 
 const QUEUE_STORAGE_KEY = 'bapas_queue_data';
 const COUNTER_STORAGE_KEY = 'bapas_queue_counters';
+const HISTORY_STORAGE_KEY = 'bapas_queue_history';
 
 export const queueManager = {
   getQueues(): QueueItem[] {
@@ -104,11 +105,53 @@ export const queueManager = {
   },
 
   resetCounters(): void {
+    const today = new Date().toISOString().split('T')[0];
+    const history = this.getHistory();
+    
+    // Simpan data hari ini ke history jika ada
+    if (this.getQueues().length > 0) {
+      history[today] = this.getQueues();
+      localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history));
+    }
+    
     this.saveCounters({
       penghadapan: 0,
       bimbingan: 0,
       kunjungan: 0,
       pengaduan: 0,
     });
+  },
+
+  getHistory(): Record<string, QueueItem[]> {
+    const data = localStorage.getItem(HISTORY_STORAGE_KEY);
+    if (!data) return {};
+    return JSON.parse(data);
+  },
+
+  getQueuesByDate(date: string): QueueItem[] {
+    const allQueues = this.getQueues();
+    const today = new Date().toISOString().split('T')[0];
+    
+    if (date === today) {
+      return allQueues;
+    }
+    
+    const history = this.getHistory();
+    return history[date] || [];
+  },
+
+  getStatistics(): {
+    totalToday: number;
+    completedToday: number;
+    waitingToday: number;
+    servingToday: number;
+  } {
+    const queues = this.getQueues();
+    return {
+      totalToday: queues.length,
+      completedToday: queues.filter(q => q.status === 'completed').length,
+      waitingToday: queues.filter(q => q.status === 'waiting').length,
+      servingToday: queues.filter(q => q.status === 'serving').length,
+    };
   },
 };

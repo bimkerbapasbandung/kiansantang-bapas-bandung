@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cek Admin Status</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; margin-top: 0; }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 10px 5px;
+            background: #3b82f6;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn:hover { background: #2563eb; }
+        .btn-success { background: #10b981; }
+        .btn-success:hover { background: #059669; }
+        .status {
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .info { background: #dbeafe; color: #1e40af; }
+        .success { background: #d1fae5; color: #065f46; }
+        .error { background: #fee2e2; color: #991b1b; }
+        .code {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🔍 Quick Access - Manajemen PK</h1>
+        
+        <div class="status info">
+            <strong>📍 Lokasi Halaman PK Management:</strong><br>
+            <div class="code">http://localhost:8080/pk-management</div>
+        </div>
+
+        <h2>🚀 Akses Cepat:</h2>
+        
+        <div>
+            <a href="http://localhost:8080/admin-setup" class="btn">
+                🛡️ Setup Admin (Login)
+            </a>
+            <br>
+            <a href="http://localhost:8080/pk-management" class="btn btn-success">
+                👥 Buka Manajemen PK
+            </a>
+            <br>
+            <a href="http://localhost:8080/settings" class="btn">
+                ⚙️ Buka Settings
+            </a>
+        </div>
+
+        <hr style="margin: 30px 0;">
+
+        <h2>📋 Panduan Lengkap:</h2>
+        
+        <div class="status info">
+            <strong>Step 1: Login sebagai Admin</strong>
+            <ol>
+                <li>Klik tombol "Setup Admin (Login)" di atas</li>
+                <li>Klik "Quick Login (Default Admin)"</li>
+                <li>Tunggu redirect ke Settings</li>
+            </ol>
+        </div>
+
+        <div class="status success">
+            <strong>Step 2: Akses PK Management</strong>
+            <ol>
+                <li>Klik tombol "Buka Manajemen PK" di atas</li>
+                <li>ATAU dari Settings → klik tombol "Kelola PK"</li>
+            </ol>
+        </div>
+
+        <hr style="margin: 30px 0;">
+
+        <h2>⚠️ Troubleshooting:</h2>
+        
+        <div class="status error">
+            <strong>Jika halaman redirect atau error:</strong>
+            <ul>
+                <li>✅ Pastikan sudah login sebagai admin</li>
+                <li>✅ Gunakan tombol "Setup Admin" di atas</li>
+                <li>✅ Kredensial default: admin@bapas.go.id / adminbapas123</li>
+                <li>✅ Setelah login, klik "Buka Manajemen PK"</li>
+            </ul>
+        </div>
+
+        <div class="code">
+            <strong>URL yang Bisa Diakses Admin:</strong><br>
+            • http://localhost:8080/operator<br>
+            • http://localhost:8080/statistics<br>
+            • http://localhost:8080/settings<br>
+            • http://localhost:8080/pk-management ← INI YANG DICARI
+        </div>
+    </div>
+</body>
+</html>

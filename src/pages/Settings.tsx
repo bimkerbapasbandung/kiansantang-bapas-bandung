@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, ArrowLeft, LogOut } from 'lucide-react';
+import { Upload, ArrowLeft, LogOut, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast as sonnerToast } from 'sonner';
 
@@ -171,10 +171,16 @@ const Settings = () => {
             </Button>
             <h1 className="text-3xl font-bold">Pengaturan Display</h1>
           </div>
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate('/pk-management')}>
+              <Users className="w-4 h-4 mr-2" />
+              Kelola PK
+            </Button>
+            <Button variant="outline" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 bg-card p-6 rounded-lg">

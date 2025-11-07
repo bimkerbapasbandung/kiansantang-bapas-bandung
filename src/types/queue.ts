@@ -1,8 +1,8 @@
 export type ServiceType = 'penghadapan' | 'bimbingan' | 'kunjungan' | 'pengaduan';
 
 export type SubService = {
-  penghadapan: 'lapas' | 'rutan' | 'lpka';
-  bimbingan: 'pb' | 'cb' | 'cmb' | 'asimilasi';
+  penghadapan: 'umum'; // Tidak ada sub menu, langsung pilih PK
+  bimbingan: 'wajib_lapor' | 'kepribadian' | 'kemandirian';
   kunjungan: 'individu' | 'instansi';
   pengaduan: 'umum';
 };
@@ -16,6 +16,7 @@ export interface QueueItem {
   pkOfficerId: string;
   pkOfficerName: string;
   pkOfficerPosition: string;
+  whatsappNumber?: string;
   status: 'waiting' | 'serving' | 'completed';
   createdAt: Date;
   calledAt?: Date;
@@ -46,15 +47,12 @@ export const SERVICE_NAMES = {
 
 export const SUB_SERVICE_NAMES = {
   penghadapan: {
-    lapas: 'Lapas',
-    rutan: 'Rutan',
-    lpka: 'LPKA',
+    umum: 'Penghadapan', // Langsung ke form, pilih PK dari database
   },
   bimbingan: {
-    pb: 'Wajib Lapor PB',
-    cb: 'Wajib Lapor CB',
-    cmb: 'Wajib Lapor CMB',
-    asimilasi: 'Asimilasi',
+    wajib_lapor: 'Wajib Lapor',
+    kepribadian: 'Kepribadian',
+    kemandirian: 'Kemandirian',
   },
   kunjungan: {
     individu: 'Kunjungan Individu',

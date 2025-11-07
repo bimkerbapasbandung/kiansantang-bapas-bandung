@@ -117,16 +117,26 @@ const Auth = () => {
           </Button>
         </form>
 
-        <div className="mt-4 text-center">
+        <div className="mt-4 text-center space-y-2">
           <button
             type="button"
             onClick={() => setIsLogin(!isLogin)}
-            className="text-sm text-primary hover:underline"
+            className="text-sm text-primary hover:underline block mx-auto"
           >
             {isLogin
               ? 'Belum punya akun? Daftar di sini'
               : 'Sudah punya akun? Login di sini'}
           </button>
+          
+          <div className="pt-2 border-t">
+            <button
+              type="button"
+              onClick={() => navigate('/admin-setup')}
+              className="text-sm text-blue-600 hover:underline font-semibold"
+            >
+              🛡️ Setup Admin (Quick Login)
+            </button>
+          </div>
         </div>
       </Card>
     </div>

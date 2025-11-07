@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convert CSV/Excel to SQL - PK Management</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 { color: #667eea; margin-bottom: 10px; }
+        .subtitle { color: #666; margin-bottom: 30px; }
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+        .step h3 { color: #667eea; margin-bottom: 10px; }
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 13px;
+            resize: vertical;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover { opacity: 0.9; }
+        .output {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .success { background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .info { background: #d1ecf1; color: #0c5460; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .copy-btn { background: #28a745; }
+        .copy-btn:hover { background: #218838; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Convert Data PK ke SQL</h1>
+        <p class="subtitle">Paste data dari Google Sheets, otomatis jadi SQL!</p>
+
+        <div class="step">
+            <h3>📋 Step 1: Copy Data dari Google Sheets</h3>
+            <p style="margin-bottom: 10px;">
+                1. Buka Google Sheets Anda<br>
+                2. Select kolom <strong>B (Nama)</strong> dan <strong>C (Jenjang)</strong><br>
+                3. Mulai dari baris data (skip header)<br>
+                4. Tekan <strong>Ctrl+C</strong> (copy)<br>
+                5. Paste di kotak di bawah
+            </p>
+            <textarea id="input" placeholder="Paste data dari Google Sheets di sini...&#10;&#10;Contoh:&#10;Ahmad Wijaya    PK Ahli Pertama&#10;Siti Nurhaliza   PK Ahli Muda&#10;Budi Santoso     Pembimbing Kemasyarakatan"></textarea>
+        </div>
+
+        <div style="text-align: center;">
+            <button onclick="generateSQL()">🚀 Generate SQL</button>
+            <button onclick="clearAll()" style="background: #dc3545;">🗑️ Clear</button>
+        </div>
+
+        <div id="result" style="display: none;">
+            <div class="success">
+                <strong>✅ SQL Berhasil Di-Generate!</strong><br>
+                Total: <span id="count">0</span> data PK
+            </div>
+
+            <button onclick="copySQL()" class="copy-btn">📋 Copy SQL</button>
+            
+            <div class="output" id="output"></div>
+
+            <div class="info">
+                <strong>📌 Cara Pakai:</strong><br>
+                1. Klik tombol "Copy SQL" di atas<br>
+                2. Buka Supabase Dashboard → SQL Editor<br>
+                3. Paste SQL dan Run<br>
+                4. Refresh halaman PK Management<br>
+                5. Done! 🎉
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function generateSQL() {
+            const input = document.getElementById('input').value.trim();
+            
+            if (!input) {
+                alert('❌ Paste data terlebih dahulu!');
+                return;
+            }
+
+            const lines = input.split('\n').filter(line => line.trim());
+            const sqlValues = [];
+
+            lines.forEach(line => {
+                // Split by tab or multiple spaces
+                const parts = line.split(/\t+|\s{2,}/).map(p => p.trim());
+                
+                if (parts.length < 2) return; // Skip invalid lines
+                
+                const name = parts[0];
+                const position = parts[1] || 'Staff';
+                
+                if (!name) return;
+
+                // Escape single quotes
+                const escapedName = name.replace(/'/g, "''");
+                const escapedPosition = position.replace(/'/g, "''");
+
+                sqlValues.push(`  ('${escapedName}', NULL, '${escapedPosition}', NULL, NULL, true)`);
+            });
+
+            if (sqlValues.length === 0) {
+                alert('❌ Tidak ada data valid yang ditemukan!\n\nPastikan format:\nNama[TAB]Jenjang');
+                return;
+            }
+
+            const sql = `-- Generated SQL for ${sqlValues.length} PK Officers
+-- Copy dan paste ke Supabase SQL Editor
+
+INSERT INTO public.pk_officers (name, nip, position, phone, email, is_active)
+VALUES
+${sqlValues.join(',\n')};
+
+-- ✅ Selesai! ${sqlValues.length} data PK siap di-import.
+-- Jalankan query ini di Supabase SQL Editor
+`;
+
+            document.getElementById('output').textContent = sql;
+            document.getElementById('count').textContent = sqlValues.length;
+            document.getElementById('result').style.display = 'block';
+            
+            // Scroll to result
+            document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copySQL() {
+            const sql = document.getElementById('output').textContent;
+            navigator.clipboard.writeText(sql).then(() => {
+                alert('✅ SQL berhasil di-copy!\n\nSekarang:\n1. Buka Supabase Dashboard\n2. SQL Editor\n3. Paste & Run');
+            });
+        }
+
+        function clearAll() {
+            document.getElementById('input').value = '';
+            document.getElementById('result').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

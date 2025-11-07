@@ -1,0 +1,43 @@
+# ========================================
+# FILE INI HARUS DI-RENAME JADI: .env.local
+# ========================================
+# 
+# Cara:
+# 1. Copy file ini
+# 2. Rename jadi: .env.local (di root folder project)
+# 3. Isi dengan URL dan KEY dari Supabase Dashboard
+# 4. Save
+# 5. Restart dev server (npm run dev)
+#
+# ========================================
+
+# Supabase Configuration
+# Ambil dari: Supabase Dashboard → Settings → API
+
+VITE_SUPABASE_URL=https://xxxxxxxxxxxxxxxxxxxxx.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# ========================================
+# CARA DAPAT URL & KEY:
+# ========================================
+#
+# 1. Buka: https://supabase.com/dashboard
+# 2. Login
+# 3. Pilih project Anda
+# 4. Klik "Settings" (icon gear) di sidebar
+# 5. Klik "API" di menu Settings
+# 6. Copy:
+#    - Project URL → Paste ke VITE_SUPABASE_URL
+#    - anon public key → Paste ke VITE_SUPABASE_PUBLISHABLE_KEY
+#
+# ========================================
+# SETELAH ISI FILE INI:
+# ========================================
+#
+# 1. Save file
+# 2. Di terminal, stop dev server (Ctrl+C)
+# 3. Jalankan lagi: npm run dev
+# 4. Refresh browser
+# 5. Data PK akan muncul! ✅
+#
+# ========================================

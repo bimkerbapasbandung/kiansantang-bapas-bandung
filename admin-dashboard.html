@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Quick Access</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .links {
+            display: grid;
+            gap: 15px;
+        }
+        .link-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 20px;
+            text-decoration: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+        .link-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        .icon {
+            font-size: 40px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+        }
+        .link-content {
+            flex: 1;
+        }
+        .link-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .link-desc {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        .primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+        .info { background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%); }
+        .warning { background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%); }
+        .danger { background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%); }
+        .active-badge {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #999;
+            text-transform: uppercase;
+            margin: 30px 0 15px 0;
+            letter-spacing: 1px;
+        }
+        .section-title:first-child {
+            margin-top: 0;
+        }
+        .credential-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .credential-box strong {
+            color: #667eea;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .credential-box code {
+            background: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Admin Dashboard</h1>
+        <p class="subtitle">Quick Access - Sistem Antrian Bapas Bandung</p>
+
+        <div class="credential-box">
+            <strong>✅ Semua Fitur Aktif!</strong>
+            <div style="margin-top: 8px;">Semua menu di bawah bisa diakses langsung tanpa login.</div>
+            <div style="font-size: 12px; color: #666; margin-top: 8px;">
+                💡 Untuk fitur admin penuh, gunakan: admin@bapas.go.id / adminbapas123
+            </div>
+        </div>
+
+        <div class="section-title">🚀 Setup & Login</div>
+        <div class="links">
+            <a href="http://localhost:8080/admin-setup" class="link-card primary">
+                <div class="icon">🛡️</div>
+                <div class="link-content">
+                    <div class="link-title">Setup Admin</div>
+                    <div class="link-desc">Login cepat atau buat admin baru</div>
+                </div>
+            </a>
+            
+            <a href="http://localhost:8080/auth" class="link-card info">
+                <div class="icon">🔑</div>
+                <div class="link-content">
+                    <div class="link-title">Login Page</div>
+                    <div class="link-desc">Login manual dengan email/password</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="section-title">👥 Manajemen Data</div>
+        <div class="links">
+            <a href="http://localhost:8080/pk-management" class="link-card success">
+                <div class="icon">👥</div>
+                <div class="link-content">
+                    <div class="link-title">Manajemen PK <span class="active-badge">✓ AKTIF</span></div>
+                    <div class="link-desc">Kelola data Pembimbing Kemasyarakatan</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="section-title">📊 Dashboard & Reports</div>
+        <div class="links">
+            <a href="http://localhost:8080/operator" class="link-card info">
+                <div class="icon">🖥️</div>
+                <div class="link-content">
+                    <div class="link-title">Dashboard Operator <span class="active-badge">✓ AKTIF</span></div>
+                    <div class="link-desc">Kelola antrian dan panggil nomor</div>
+                </div>
+            </a>
+            
+            <a href="http://localhost:8080/statistics" class="link-card warning">
+                <div class="icon">📈</div>
+                <div class="link-content">
+                    <div class="link-title">Statistik & Laporan <span class="active-badge">✓ AKTIF</span></div>
+                    <div class="link-desc">Lihat statistik dan export CSV</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="section-title">⚙️ Pengaturan</div>
+        <div class="links">
+            <a href="http://localhost:8080/settings" class="link-card danger">
+                <div class="icon">⚙️</div>
+                <div class="link-content">
+                    <div class="link-title">Settings <span class="active-badge">✓ AKTIF</span></div>
+                    <div class="link-desc">Pengaturan display dan konfigurasi</div>
+                </div>
+            </a>
+            
+            <a href="http://localhost:8080/display" class="link-card info">
+                <div class="icon">📺</div>
+                <div class="link-content">
+                    <div class="link-title">Display Public</div>
+                    <div class="link-desc">Tampilan untuk layar TV/monitor</div>
+                </div>
+            </a>
+            
+            <a href="http://localhost:8080" class="link-card primary">
+                <div class="icon">🏠</div>
+                <div class="link-content">
+                    <div class="link-title">Beranda</div>
+                    <div class="link-desc">Halaman utama sistem</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Auto-open first link after 2 seconds if user wants
+        console.log('🎯 Admin Dashboard Ready!');
+        console.log('👉 Klik "Setup Admin" untuk mulai');
+    </script>
+</body>
+</html>

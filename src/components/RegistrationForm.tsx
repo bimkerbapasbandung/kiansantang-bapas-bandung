@@ -5,7 +5,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface PKOfficer {
   id: string;
@@ -23,6 +24,7 @@ export const RegistrationForm = ({ onSubmit, onBack }: RegistrationFormProps) =>
   const [selectedPkId, setSelectedPkId] = useState('');
   const [pkOfficers, setPkOfficers] = useState<PKOfficer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errors, setErrors] = useState<{ clientName?: string; pkOfficer?: string }>({});
 
   useEffect(() => {
     fetchPkOfficers();
@@ -45,11 +47,37 @@ export const RegistrationForm = ({ onSubmit, onBack }: RegistrationFormProps) =>
     }
   };
 
+  const validateForm = (): boolean => {
+    const newErrors: { clientName?: string; pkOfficer?: string } = {};
+    
+    if (!clientName.trim()) {
+      newErrors.clientName = 'Nama klien harus diisi';
+    } else if (clientName.trim().length < 3) {
+      newErrors.clientName = 'Nama klien minimal 3 karakter';
+    } else if (!/^[a-zA-Z\s.]+$/.test(clientName.trim())) {
+      newErrors.clientName = 'Nama klien hanya boleh mengandung huruf dan spasi';
+    }
+    
+    if (!selectedPkId) {
+      newErrors.pkOfficer = 'Pembimbing Kemasyarakatan harus dipilih';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      toast.error('Mohon lengkapi form dengan benar');
+      return;
+    }
+    
     const selectedOfficer = pkOfficers.find(officer => officer.id === selectedPkId);
     if (clientName && selectedOfficer) {
       onSubmit(clientName, selectedOfficer);
+      toast.success('Nomor antrian berhasil dibuat');
     }
   };
 
@@ -77,14 +105,35 @@ export const RegistrationForm = ({ onSubmit, onBack }: RegistrationFormProps) =>
               type="text"
               placeholder="Masukkan nama lengkap"
               value={clientName}
-              onChange={(e) => setClientName(e.target.value)}
+              onChange={(e) => {
+                setClientName(e.target.value);
+                if (errors.clientName) {
+                  setErrors({ ...errors, clientName: undefined });
+                }
+              }}
+              className={errors.clientName ? 'border-red-500' : ''}
               required
             />
+            {errors.clientName && (
+              <p className="text-sm text-red-500 flex items-center gap-1">
+                <AlertCircle className="w-4 h-4" />
+                {errors.clientName}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="pkOfficer">Pembimbing Kemasyarakatan (PK)</Label>
-            <Select value={selectedPkId} onValueChange={setSelectedPkId} required>
+            <Select 
+              value={selectedPkId} 
+              onValueChange={(value) => {
+                setSelectedPkId(value);
+                if (errors.pkOfficer) {
+                  setErrors({ ...errors, pkOfficer: undefined });
+                }
+              }} 
+              required
+            >
               <SelectTrigger id="pkOfficer">
                 <SelectValue placeholder="Pilih Pembimbing Kemasyarakatan" />
               </SelectTrigger>
@@ -102,6 +151,12 @@ export const RegistrationForm = ({ onSubmit, onBack }: RegistrationFormProps) =>
                 )}
               </SelectContent>
             </Select>
+            {errors.pkOfficer && (
+              <p className="text-sm text-red-500 flex items-center gap-1">
+                <AlertCircle className="w-4 h-4" />
+                {errors.pkOfficer}
+              </p>
+            )}
           </div>
 
           <Button
