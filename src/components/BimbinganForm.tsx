@@ -70,12 +70,11 @@ export const BimbinganForm = ({ subService, onSubmit, onBack }: BimbinganFormPro
       setLoading(true);
       console.log('=== LOADING PK OFFICERS ===');
       
-      // Load PK officers yang sudah di-sync dari Google Sheets
+      // Load all active PK officers
       const { data, error } = await supabase
         .from('pk_officers')
         .select('*')
         .eq('is_active', true)
-        .not('sheet_id', 'is', null) // Hanya PK yang sudah di-sync dari Google Sheets
         .order('name');
 
       console.log('PK Officers query result:', { data, error });
@@ -86,11 +85,11 @@ export const BimbinganForm = ({ subService, onSubmit, onBack }: BimbinganFormPro
       }
       
       if (!data || data.length === 0) {
-        console.log('No PK officers found with sheet_id');
-        toast.info('💡 Belum ada data PK dari Google Sheets. Silakan sync terlebih dahulu!');
+        console.log('No PK officers found');
+        toast.info('💡 Belum ada data PK. Silakan tambahkan di menu Manajemen PK!');
       } else {
         console.log(`✅ Loaded ${data.length} PK officers`);
-        toast.success(`✅ ${data.length} PK berhasil dimuat dari Google Sheets`);
+        toast.success(`✅ ${data.length} PK berhasil dimuat`);
       }
       
       setPkOfficers(data || []);
