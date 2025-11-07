@@ -105,19 +105,19 @@ export const soundManager = {
   },
 
   // Replace template placeholders dengan data real
-  replaceTemplatePlaceholders(template: string, data: any): string {
+  replaceTemplatePlaceholders(template: string, data: Record<string, string | number>): string {
     let result = template;
     
     // Replace semua placeholder
-    const placeholders: Record<string, any> = {
-      '{{queueNumber}}': data.queueNumber || '',
-      '{{clientName}}': data.clientName || '',
-      '{{serviceName}}': data.serviceName || '',
-      '{{subServiceName}}': data.subServiceName || '',
-      '{{pkOfficerName}}': data.pkOfficerName || '',
-      '{{pkOfficerPosition}}': data.pkOfficerPosition || '',
-      '{{time}}': data.time || new Date().toLocaleTimeString('id-ID'),
-      '{{counter}}': data.counter || ''
+    const placeholders: Record<string, string> = {
+      '{{queueNumber}}': String(data.queueNumber || ''),
+      '{{clientName}}': String(data.clientName || ''),
+      '{{serviceName}}': String(data.serviceName || ''),
+      '{{subServiceName}}': String(data.subServiceName || ''),
+      '{{pkOfficerName}}': String(data.pkOfficerName || ''),
+      '{{pkOfficerPosition}}': String(data.pkOfficerPosition || ''),
+      '{{time}}': String(data.time || new Date().toLocaleTimeString('id-ID')),
+      '{{counter}}': String(data.counter || '')
     };
 
     Object.keys(placeholders).forEach(key => {
@@ -125,7 +125,7 @@ export const soundManager = {
     });
 
     // Hapus emoji dan karakter khusus untuk TTS
-    result = result.replace(/[📢🎫👤📋📝👨‍💼📍⏰✅🆔📄]/g, '');
+    result = result.replace(/[📢🎫👤📋📝👨‍💼📍⏰✅🆔📄]/gu, '');
     
     // Hapus baris kosong berlebih
     result = result.replace(/\n\n+/g, '. ');
@@ -142,7 +142,7 @@ export const soundManager = {
     queueNumber: string, 
     counter: number, 
     serviceType?: string,
-    queueData?: any,
+    queueData?: Record<string, string | number>,
     onAnnouncementStart?: (text: string) => void,
     onAnnouncementEnd?: () => void
   ): Promise<void> {
@@ -298,7 +298,8 @@ export const soundManager = {
       // Play synthesized notification sound
       try {
         if (!audioContextRef) {
-          audioContextRef = new (window.AudioContext || (window as any).webkitAudioContext)();
+          const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+          audioContextRef = new AudioContextClass();
         }
         const context = audioContextRef;
         const oscillator = context.createOscillator();
@@ -311,7 +312,7 @@ export const soundManager = {
         let duration = 0.5;
 
         switch (settings.type) {
-          case 'bell':
+          case 'bell': {
             // Bell sound - dual tone
             const osc2 = context.createOscillator();
             osc2.type = 'sine';
@@ -324,6 +325,7 @@ export const soundManager = {
             osc2.start();
             osc2.stop(context.currentTime + 1);
             break;
+          }
 
           case 'chime':
             // Chime sound - high pitch triangle
@@ -357,7 +359,8 @@ export const soundManager = {
   playEndNotification(): void {
     try {
       if (!audioContextRef) {
-        audioContextRef = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        audioContextRef = new AudioContextClass();
       }
       const context = audioContextRef;
       const oscillator = context.createOscillator();
