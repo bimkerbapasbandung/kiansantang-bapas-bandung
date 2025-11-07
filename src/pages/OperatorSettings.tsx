@@ -42,6 +42,11 @@ interface CustomAudioSettings {
   useCustomAudio: boolean;
 }
 
+interface NotificationSettings {
+  type: 'beep' | 'bell' | 'chime' | 'custom' | 'none';
+  customSoundURL: string | null;
+}
+
 const OperatorSettings = () => {
   const navigate = useNavigate();
   
@@ -121,6 +126,12 @@ const OperatorSettings = () => {
     useCustomAudio: false
   });
 
+  // Notification Settings
+  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>({
+    type: 'beep',
+    customSoundURL: null
+  });
+
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [hasUnsavedVoiceChanges, setHasUnsavedVoiceChanges] = useState(false);
 
@@ -137,6 +148,9 @@ const OperatorSettings = () => {
 
     const savedAudio = localStorage.getItem('customAudioSettings');
     if (savedAudio) setCustomAudio(JSON.parse(savedAudio));
+
+    const savedNotification = localStorage.getItem('notificationSettings');
+    if (savedNotification) setNotificationSettings(JSON.parse(savedNotification));
 
     // Load available voices - filter bahasa Indonesia dengan prioritas Google
     const loadVoices = () => {
@@ -256,6 +270,33 @@ const OperatorSettings = () => {
   const saveCustomAudio = () => {
     localStorage.setItem('customAudioSettings', JSON.stringify(customAudio));
     toast.success('Pengaturan audio custom berhasil disimpan!');
+  };
+
+  const saveNotificationSettings = () => {
+    localStorage.setItem('notificationSettings', JSON.stringify(notificationSettings));
+    toast.success('Pengaturan notifikasi berhasil disimpan!');
+  };
+
+  const handleCustomNotificationUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        setNotificationSettings(prev => ({
+          ...prev,
+          customSoundURL: base64
+        }));
+        toast.success('Audio notifikasi custom berhasil diunggah!');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const testNotification = async () => {
+    const { soundManager } = await import('@/lib/soundManager');
+    await soundManager.playNotification();
+    toast.info('Memutar notifikasi test...');
   };
 
   const handleAudioSave = (serviceType: keyof Omit<CustomAudioSettings, 'useCustomAudio'>, audioBlob: Blob, audioUrl: string) => {

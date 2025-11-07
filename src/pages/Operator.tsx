@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { queueManager } from '@/lib/queueManager';
 import { soundManager } from '@/lib/soundManager';
 import { QueueItem, SERVICE_NAMES, SUB_SERVICE_NAMES, ServiceType } from '@/types/queue';
-import { Phone, CheckCircle, ArrowLeft, RefreshCw, LogOut, Search, BarChart3, Copy, User, MapPin, Briefcase, MessageSquare, Settings, Volume2, Sheet } from 'lucide-react';
+import { Phone, CheckCircle, ArrowLeft, RefreshCw, LogOut, Search, BarChart3, Copy, User, MapPin, Briefcase, MessageSquare, Settings, Volume2, Sheet, Repeat } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -51,7 +51,7 @@ const Operator = () => {
     setCurrentQueue(queueManager.getCurrentlyServing());
   };
 
-  const callNext = () => {
+  const callNext = async () => {
     if (waitingQueues.length === 0) {
       toast.error('Tidak ada antrian menunggu');
       return;
@@ -74,30 +74,52 @@ const Operator = () => {
       })
     };
     
-    // Gunakan sound manager yang lebih baik
-    soundManager.playNotification();
-    setTimeout(() => {
-      soundManager.announceQueue(
-        nextQueue.queueNumber, 
-        counter, 
-        nextQueue.serviceType,
-        queueData,
-        (text) => {
-          // Callback saat announcement dimulai
-          setCurrentAnnouncement(text);
-          setIsAnnouncing(true);
-        },
-        () => {
-          // Callback saat announcement selesai
-          setTimeout(() => {
-            setIsAnnouncing(false);
-            setCurrentAnnouncement('');
-          }, 1000);
-        }
-      );
-    }, 300);
+    // Play notification sound first (async)
+    await soundManager.playNotification();
+    
+    // Then announce queue
+    soundManager.announceQueue(
+      nextQueue.queueNumber, 
+      counter, 
+      nextQueue.serviceType,
+      queueData,
+      (text) => {
+        // Callback saat announcement dimulai
+        setCurrentAnnouncement(text);
+        setIsAnnouncing(true);
+      },
+      () => {
+        // Callback saat announcement selesai
+        setTimeout(() => {
+          setIsAnnouncing(false);
+          setCurrentAnnouncement('');
+        }, 1000);
+      }
+    );
     
     loadQueues();
+  };
+
+  const repeatLastCall = () => {
+    if (!soundManager.canRepeatLast()) {
+      toast.error('Tidak ada panggilan untuk diulang atau panggilan terlalu pendek');
+      return;
+    }
+
+    toast.info('Mengulang panggilan terakhir...');
+    
+    soundManager.repeatLastAnnouncement(
+      (text) => {
+        setCurrentAnnouncement(text);
+        setIsAnnouncing(true);
+      },
+      () => {
+        setTimeout(() => {
+          setIsAnnouncing(false);
+          setCurrentAnnouncement('');
+        }, 1000);
+      }
+    );
   };
 
   const completeService = () => {
@@ -232,6 +254,16 @@ const Operator = () => {
             </div>
             <div className="flex gap-2 flex-wrap">
               <GoogleSheetsSyncButton />
+              <Button 
+                variant="outline" 
+                onClick={repeatLastCall}
+                disabled={!soundManager.canRepeatLast() || isAnnouncing}
+                className="border-green-200 hover:bg-green-50"
+                title="Ulangi Panggilan Terakhir"
+              >
+                <Repeat className="w-4 h-4 mr-2" />
+                Ulangi
+              </Button>
               <Button 
                 variant="outline" 
                 onClick={() => navigate('/operator-settings')}

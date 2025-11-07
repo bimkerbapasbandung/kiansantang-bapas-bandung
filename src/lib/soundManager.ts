@@ -1,4 +1,9 @@
 // Sound Manager untuk notifikasi suara yang lebih baik
+// Inspired by BKD Project - Advanced TTS System
+
+let audioContextRef: AudioContext | null = null;
+let lastAnnouncementText: string = '';
+
 export const soundManager = {
   // Load voice settings from localStorage
   getVoiceSettings() {
@@ -184,6 +189,9 @@ export const soundManager = {
     // Replace placeholders
     const announcement = this.replaceTemplatePlaceholders(template, templateData);
     
+    // Save for repeat function
+    lastAnnouncementText = announcement;
+    
     console.log('Announcement text:', announcement);
     
     // Callback untuk announcement start
@@ -228,9 +236,10 @@ export const soundManager = {
           }
           
           repeatUtterance.onend = () => {
-            // Setelah pengulangan selesai
+            // Setelah pengulangan selesai, play end notification
+            this.playEndNotification();
             if (onAnnouncementEnd) {
-              onAnnouncementEnd();
+              setTimeout(onAnnouncementEnd, 1000);
             }
           };
           
@@ -238,8 +247,9 @@ export const soundManager = {
         }, 500);
       } else {
         // Jika hanya 1x (tidak ada pengulangan)
+        this.playEndNotification();
         if (onAnnouncementEnd) {
-          onAnnouncementEnd();
+          setTimeout(onAnnouncementEnd, 1000);
         }
       }
     };
@@ -247,33 +257,195 @@ export const soundManager = {
     speechSynthesis.speak(utterance);
   },
 
-  // Fungsi untuk memutar suara notifikasi
-  playNotification(): void {
-    // Buat audio context untuk suara notifikasi
+  // Get notification settings
+  getNotificationSettings() {
+    const saved = localStorage.getItem('notificationSettings');
+    if (saved) {
+      return JSON.parse(saved);
+    }
+    return {
+      type: 'beep', // 'beep', 'bell', 'chime', 'custom', 'none'
+      customSoundURL: null
+    };
+  },
+
+  // Play start notification (sebelum announcement)
+  playNotification(): Promise<void> {
+    return new Promise((resolve) => {
+      const settings = this.getNotificationSettings();
+      
+      if (settings.type === 'none') {
+        resolve();
+        return;
+      }
+
+      // Play custom sound if available
+      if (settings.type === 'custom' && settings.customSoundURL) {
+        try {
+          const audio = new Audio(settings.customSoundURL);
+          audio.onended = () => resolve();
+          audio.onerror = () => {
+            console.error('Failed to play custom notification');
+            resolve();
+          };
+          audio.play().catch(() => resolve());
+          return;
+        } catch (error) {
+          console.error('Error playing custom notification:', error);
+        }
+      }
+
+      // Play synthesized notification sound
+      try {
+        if (!audioContextRef) {
+          audioContextRef = new (window.AudioContext || (window as any).webkitAudioContext)();
+        }
+        const context = audioContextRef;
+        const oscillator = context.createOscillator();
+        const gainNode = context.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(context.destination);
+        gainNode.gain.setValueAtTime(0.2, context.currentTime);
+
+        let duration = 0.5;
+
+        switch (settings.type) {
+          case 'bell':
+            // Bell sound - dual tone
+            const osc2 = context.createOscillator();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(1200, context.currentTime);
+            osc2.connect(gainNode);
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, context.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 1);
+            duration = 1;
+            osc2.start();
+            osc2.stop(context.currentTime + 1);
+            break;
+
+          case 'chime':
+            // Chime sound - high pitch triangle
+            oscillator.type = 'triangle';
+            oscillator.frequency.setValueAtTime(1500, context.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.3);
+            duration = 0.3;
+            break;
+
+          case 'beep':
+          default:
+            // Beep sound - standard sine wave
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, context.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.5);
+            duration = 0.5;
+            break;
+        }
+
+        oscillator.start();
+        oscillator.stop(context.currentTime + duration);
+        setTimeout(resolve, duration * 1000);
+      } catch (error) {
+        console.warn('Audio context tidak didukung:', error);
+        resolve();
+      }
+    });
+  },
+
+  // Play end notification (setelah announcement selesai)
+  playEndNotification(): void {
     try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
+      if (!audioContextRef) {
+        audioContextRef = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      const context = audioContextRef;
+      const oscillator = context.createOscillator();
+      const gainNode = context.createGain();
 
       oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
+      gainNode.connect(context.destination);
 
-      oscillator.frequency.value = 800;
-      oscillator.type = 'sine';
-      
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      oscillator.type = 'square';
+      oscillator.frequency.setValueAtTime(440, context.currentTime);
+      gainNode.gain.setValueAtTime(0.15, context.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.3);
 
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.5);
+      oscillator.start();
+      oscillator.stop(context.currentTime + 0.3);
     } catch (error) {
-      console.warn('Audio context tidak didukung:', error);
+      console.warn('Could not play end notification:', error);
     }
   },
 
+  // Repeat last announcement (untuk tombol ulangi)
+  async repeatLastAnnouncement(
+    onAnnouncementStart?: (text: string) => void,
+    onAnnouncementEnd?: () => void
+  ): Promise<void> {
+    if (!lastAnnouncementText) {
+      console.warn('No previous announcement to repeat');
+      return;
+    }
+
+    // Split by paragraphs
+    const paragraphs = lastAnnouncementText.split(/\n\n+/).filter(p => p.trim() !== '');
+
+    if (paragraphs.length <= 1) {
+      console.warn('No additional paragraphs to repeat');
+      return;
+    }
+
+    // Repeat from second paragraph onwards
+    const repeatText = paragraphs.slice(1).join('. ');
+    const finalText = `Sekali lagi, ${repeatText}. Atas perhatiannya kami ucapkan terima kasih.`;
+
+    if (onAnnouncementStart) {
+      onAnnouncementStart(finalText);
+    }
+
+    if (!('speechSynthesis' in window)) {
+      console.warn('Speech synthesis tidak didukung');
+      return;
+    }
+
+    speechSynthesis.cancel();
+
+    const settings = this.getVoiceSettings();
+    const utterance = new SpeechSynthesisUtterance(finalText);
+    utterance.lang = 'id-ID';
+    utterance.rate = settings.rate;
+    utterance.pitch = settings.pitch;
+    utterance.volume = settings.volume;
+
+    if (settings.voice !== 'default') {
+      const voices = window.speechSynthesis.getVoices();
+      const selectedVoice = voices.find(v => v.name === settings.voice);
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+      }
+    }
+
+    utterance.onend = () => {
+      this.playEndNotification();
+      if (onAnnouncementEnd) {
+        setTimeout(onAnnouncementEnd, 1000);
+      }
+    };
+
+    speechSynthesis.speak(utterance);
+  },
+
+  // Check if can repeat (ada paragraf kedua atau lebih)
+  canRepeatLast(): boolean {
+    if (!lastAnnouncementText) return false;
+    const paragraphs = lastAnnouncementText.split(/\n\n+/).filter(p => p.trim() !== '');
+    return paragraphs.length > 1;
+  },
+
   // Tes suara
-  testSound(): void {
-    this.playNotification();
+  async testSound(): Promise<void> {
+    await this.playNotification();
     setTimeout(() => {
       this.announceQueue('PH-001', 1);
     }, 500);
